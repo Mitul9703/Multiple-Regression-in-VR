@@ -19,18 +19,33 @@ public class PreciseGradientDescent : MonoBehaviour
     public float B => b;
     public float C => c;
 
+    private int convergenceCount = 0;
+    private float previousCost = float.MaxValue;
+
     public TextMeshPro planeEquationText;
+    private Coroutine descentCoroutine = null;
+
+    private bool isSimulationRunning = false;
+
+    public Vector3 initialPlanePosition = new Vector3(0, 0, 0); // Default position; adjust as needed
+    public Quaternion initialPlaneRotation = Quaternion.identity; // Default rotation
+    public Vector3 initialPlaneScale = new Vector3(0, 0,0);
+
 
     void Start()
     {
-        // Ensure DataManager is assigned and has data
+        // Initialize simulation setup but do not start the descent coroutine automatically.
+        InitializeSimulation();
+    }
+
+    public void InitializeSimulation()
+    {
         if (dataManager != null && dataManager.dataPoints != null)
         {
             dataPoints = dataManager.dataPoints;
-            StartCoroutine(RunGradientDescent());
-            Debug.Log($"Optimized coefficients: a={a}, b={b}, c={c}");
-            AdjustPlane();
-            
+            ResetSimulation(); // Reset simulation state before starting
+                               // Do not automatically start the descent coroutine here.
+            Debug.Log("Initialized simulation with coefficients: a={a}, b={b}, c={c}");
         }
         else
         {
@@ -38,12 +53,101 @@ public class PreciseGradientDescent : MonoBehaviour
         }
     }
 
+    public void StartSimulation()
+    {
+        if (!isSimulationRunning)
+        {
+
+            if (regressionPlane != null)
+            {
+                regressionPlane.SetActive(true);
+                Debug.Log("Plane set to active.");
+            }
+            ResetSimulation(); // Ensure simulation state is reset before starting.
+            descentCoroutine = StartCoroutine(RunGradientDescent());
+            isSimulationRunning = true;
+            Debug.Log("Simulation started.");
+        }
+        else
+        {
+            Debug.Log("Simulation is already running.");
+        }
+    }
+
+    public void TogglePauseResume()
+    {
+        if (!isSimulationRunning && descentCoroutine == null)
+        {
+            // If the simulation is not running and the coroutine is null, it's paused; resume it.
+            descentCoroutine = StartCoroutine(RunGradientDescent());
+            isSimulationRunning = true;
+            Debug.Log("Simulation resumed.");
+        }
+        else if (isSimulationRunning && descentCoroutine != null)
+        {
+            // If the simulation is running, pause it.
+            StopCoroutine(descentCoroutine);
+            descentCoroutine = null;
+            isSimulationRunning = false;
+            Debug.Log("Simulation paused.");
+        }
+    }
+
+
+    private void ResetSimulation()
+    {
+            // Reset functionality...
+            if (descentCoroutine != null)
+            {
+                StopCoroutine(descentCoroutine);
+                descentCoroutine = null;
+            }
+            isSimulationRunning = false;
+            // Variable resets and UI updates...
+            Debug.Log("Simulation reset.");
+        // Reset regression coefficients
+        a = 0f;
+        b = 0f;
+        c = 0f;
+
+        // Reset simulation state variables
+        previousCost = float.MaxValue;
+        convergenceCount = 0;
+
+        // Reset UI elements
+        if (planeEquationText != null)
+        {
+            planeEquationText.text = "Plane Equation \n y = ax + bz + c";
+            regressionPlane.transform.position = initialPlanePosition;
+            regressionPlane.transform.rotation = initialPlaneRotation;
+            regressionPlane.transform.localScale = initialPlaneScale;
+            Debug.Log("Plane position, rotation, and scale reset.");
+
+        }
+
+        // Reset visualization elements
+        // E.g., Reset the regressionPlane position, rotation, and scale if modified
+
+
+        // Optionally, reset data points if they are modified during the simulation
+        // This would require re-loading them or restoring their original values
+    }
+
+
+    void OnDisable()
+    {
+        if (descentCoroutine != null)
+        {
+            StopCoroutine(descentCoroutine);
+        }
+    }
+
     IEnumerator RunGradientDescent()
     {
         int m = dataPoints.Count;
-        float previousCost = float.MaxValue;
+        
         const float convergenceThreshold = 0.001f;  // Set this to a value that signifies convergence
-        int convergenceCount = 0; // Counter to check for consecutive non-significant changes
+         // Counter to check for consecutive non-significant changes
 
         for (int i = 0; i < iterations; i++)
         {
@@ -84,7 +188,7 @@ public class PreciseGradientDescent : MonoBehaviour
 
             if (planeEquationText != null)
             {
-                planeEquationText.text = $"Plane Equation: y = {a:F2}x + {b:F2}z + {c:F2}";
+                planeEquationText.text = $"Plane Equation \n y = {a:F2}x + {b:F2}z + {c:F2}";
             }
 
             // Early stopping condition: Check if the absolute change in cost is less than the threshold

@@ -19,11 +19,15 @@ public class DataManager : MonoBehaviour
  
     public GameObject tickPrefab;
 
+    public GameObject Axes;
+
+    public float elevationHeight = 20.0f; // Set this to whatever height you want.
 
 
     void Start()
     {
-
+        Axes = new GameObject("Axes");
+        Axes.transform.parent = this.transform;
         LoadData(inputfile);
         CalcMAxandMin(); // First calculation to get the original bounds
         NormalizeDataPoints(); // Normalize the data points to your desired range
@@ -32,6 +36,7 @@ public class DataManager : MonoBehaviour
         PlotDataPoints();
         CreateAxisLabels();// Now create axes with the updated bounds
         CreateAllTicks();
+        
     }
 
     public float maxX = 0f;
@@ -45,6 +50,7 @@ public class DataManager : MonoBehaviour
     public float minX = float.MaxValue;
     public float minY = float.MaxValue;
     public float minZ = float.MaxValue;
+
 
 
     void NormalizeDataPoints()
@@ -116,10 +122,10 @@ public class DataManager : MonoBehaviour
         axisY.transform.localScale = new Vector3(axisY.transform.localScale.x, maxY + 10, axisY.transform.localScale.z);
         axisZ.transform.localScale = new Vector3(axisZ.transform.localScale.x, axisZ.transform.localScale.y, maxZ + 10);
 
-        // Optionally set the parent for cleaner hierarchy
-        axisX.transform.parent = this.transform;
-        axisY.transform.parent = this.transform;
-        axisZ.transform.parent = this.transform;
+
+        axisX.transform.SetParent(Axes.transform, false);
+        axisY.transform.SetParent(Axes.transform, false);
+        axisZ.transform.SetParent(Axes.transform, false);
 
     }
 
@@ -198,17 +204,23 @@ public class DataManager : MonoBehaviour
         // Instantiate TextMeshPro for X Axis label
         GameObject labelX = Instantiate(textMeshProPrefab, new Vector3(maxX + offset, 0, -20), Quaternion.identity);
         labelX.GetComponent<TextMeshPro>().text = "X Label"; // Change TextMesh to TextMeshPro
-        labelX.transform.SetParent(axisPrefabX.transform, false); // Make it a child of the axis for cleaner hierarchy
+        
+        
 
         // Instantiate TextMeshPro for Y Axis label
         GameObject labelY = Instantiate(textMeshProPrefab, new Vector3(0, maxY + offset, 0), Quaternion.identity);
         labelY.GetComponent<TextMeshPro>().text = "Y Label"; // Change TextMesh to TextMeshPro
-        labelX.transform.SetParent(axisPrefabY.transform, false);
+        
 
         // Instantiate TextMeshPro for Z Axis label
         GameObject labelZ = Instantiate(textMeshProPrefab, new Vector3(0, 0, maxZ + offset), Quaternion.identity);
         labelZ.GetComponent<TextMeshPro>().text = "Z Label"; // Change TextMesh to TextMeshPro
-        labelX.transform.SetParent(axisPrefabZ.transform, false);
+        
+
+
+        labelX.transform.SetParent(Axes.transform, false);
+        labelY.transform.SetParent(Axes.transform, false);
+        labelZ.transform.SetParent(Axes.transform, false);
     }
 
 
@@ -229,7 +241,7 @@ public class DataManager : MonoBehaviour
 
             // Instantiate tick prefab and position it
             GameObject tick = Instantiate(tickPrefab);
-            tick.transform.SetParent(axis.transform, false);
+            tick.transform.SetParent(Axes.transform, false);
 
             Vector3 tickPosition = Vector3.zero;
 
