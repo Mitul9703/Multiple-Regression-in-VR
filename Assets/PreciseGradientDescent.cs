@@ -94,14 +94,17 @@ public class PreciseGradientDescent : MonoBehaviour
                 convergenceCount = 0; // Reset if a significant change is found
             }
             previousCost = cost; // Update the previous cost
-
-            if (i % 10 == 0 || i == iterations - 1)
+            if (i < 200)
+            {
+                yield return new WaitForSeconds(0.01f);
+            }
+            else if (i % 10 == 0 || i == iterations - 1)
             {
                 Debug.Log($"Iteration {i}, Cost: {cost}, PrevCost : {previousCost}, a={a}, b={b}, c={c}");
                 // Adjust the plane with the current coefficients
 
                 // Optionally, wait for a short time to visually see the plane adjusting
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSeconds(0.01f);
             }
             AdjustPlane();
             

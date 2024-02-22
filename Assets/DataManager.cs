@@ -146,7 +146,8 @@ public class DataManager : MonoBehaviour
 
             // Set the text of the label
             TextMeshPro labelTMP = labelInstance.GetComponent<TextMeshPro>();
-            labelTMP.text = string.Format("({0:0.00}, {1:0.00}, {2:0.00})", originalX, originalY, originalZ);
+            labelTMP.text = string.Format("({0:0.0}, {1:0.0}, {2:0.0})", originalX, originalY, originalZ);
+            labelTMP.fontSize = 10;
         }
     }
 
